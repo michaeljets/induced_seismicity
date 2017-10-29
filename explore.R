@@ -1,7 +1,8 @@
-setwd("~/Stat_157/induced_seismicity")
+# setwd("~/Stat_157/induced_seismicity")
 
 library(dplyr)
 library(stringr)
+library(tidyr)
 
 library(maps)
 library(maptools)
@@ -116,20 +117,14 @@ plot(x=1980:2017, y=table(ca_dat$time_year), type = 'b')
 # ggmap(x) +
 #   geom_point(aes(x=longitude, y=latitude, col=as.factor(time_dec)), data = kern_dat)
 
-cal_sp = SpatialPointsDataFrame(ca_dat[, c("longitude", "latitude")],
-                                 data.frame(ID=seq(1:nrow(ca_dat))),
-                                 proj4string=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
-cal_eq_points = spTransform(cal_sp, CRS( "+proj=longlat +ellps=WGS84 +datum=WGS84" ))
-cal_eq_points_df = data.frame(cal_eq_points)
-cal_eq_points_df$time = ca_dat$time_year
 
+# read california as polygon
 california = map_data("state") %>% filter(region == 'california')
-california_sp = SpatialPointsDataFrame(california[, c("long", "lat")], 
-                                       data.frame(ID=seq(1:nrow(california))), 
-                                       proj4string=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
-california_points = spTransform(california_sp, CRS( "+proj=longlat +ellps=WGS84 +datum=WGS84" ))
-california_points_df = data.frame(california_points)
-california_points_df$group = california$group
+california_poly = Polygon(california[ , c("long", "lat")])
+california_polys = Polygons(list(california_poly), 1)
+california_spoly = SpatialPolygons(list(california_polys))
+proj4string(california_spoly) = CRS( "+proj=longlat +ellps=WGS84 +datum=WGS84" )
+california_spoly_df = fortify(california_spoly)
 
 
 ca_wells = readOGR(dsn = 'rawdata/wells/california/shapefiles/AllWells',
@@ -141,7 +136,121 @@ ca_wells_df2 = ca_wells_df %>%
                 filter(WellStatus == 'A',
                        Latitude != 0 | Longitude != 0)
 
+# link this wells data with the injection data
+
+inj_wells = read.csv("rawdata/wells/california/raw_injection_wells.csv", 
+                     stringsAsFactors = F, colClasses = "character")
+inj_wells_store = inj_wells
+inj_wells = inj_wells %>%
+              dplyr::select(APINumber, CountyName, DaysInjecting,
+                     DistrictNumber, InjectionDate, InjectionStatus,
+                     MissingDataCode, PoolCode, PoolName,
+                     PoolWellTypeStatus, Steam.WaterInjected.BBL.,
+                     SurfaceInjPressure, SystemEntryDate, WellNumber,
+                     WellStatus, WellTypeCode, Year)
+ca_wells_df = ca_wells_df %>%
+                mutate_all(funs('as.character')) %>%
+                dplyr::select(APINumber, BLMWell, CompDate,
+                              ConfWell, coords.x1, coords.x2,
+                              County, District, DryHole, Elevation,
+                              EPAWell, HydFrac, RedCanFlag,
+                              RedrillFt, SpudDate, TotalDepth,
+                              WellNumber, WellStatus)
+final_wells = inner_join(inj_wells, ca_wells_df, by = c("APINumber")) %>%
+                mutate(Year = as.numeric(Year),
+                       Steam.WaterInjected.BBL. = as.numeric(Steam.WaterInjected.BBL.),
+                       coords.x1 = as.numeric(coords.x1),
+                       coords.x2 = as.numeric(coords.x2)) %>%
+                rename(WaterInjected = Steam.WaterInjected.BBL.,
+                       Longitude = coords.x1,
+                       Latitude = coords.x2) %>%
+                filter(Year >= 2010,
+                       WellTypeCode == "WD",
+                       Longitude < -80)
+
+# change final_wells to different formats
+final_wells_wide = final_wells %>%
+                    filter(CountyName == 'Kern') %>%
+                    dplyr::select(APINumber,
+                                  InjectionDate, 
+                                  WaterInjected,
+                                  Longitude,
+                                  Latitude) %>%
+                    distinct(APINumber, InjectionDate, .keep_all = T) %>%
+                    group_by(APINumber) %>%
+                    spread(key = InjectionDate,
+                           value = WaterInjected) %>%
+                    data.frame()
+
+row.names(final_wells_wide) = 1:nrow(final_wells_wide)
+final_wells_wide_sp = SpatialPointsDataFrame(coords = final_wells_wide %>% dplyr::select(Longitude, Latitude),
+                                        data = final_wells %>% dplyr::select(-Longitude, -Latitude, -APINumber),
+                                        proj4string = CRS( "+proj=longlat +ellps=WGS84 +datum=WGS84" ))
+
+# spatial polygons
+# read kern county as polygon
+kern = map_data("county") %>% filter(subregion == 'kern')
+kern_poly = Polygon(kern[ , c("long", "lat")])
+kern_polys = Polygons(list(kern_poly), 1)
+kern_spoly = SpatialPolygons(list(kern_polys))
+proj4string(kern_spoly) = CRS( "+proj=longlat +ellps=WGS84 +datum=WGS84" )
+kern_spoly_df = fortify(kern_spoly)
+
+# look at final_wells_wide in kern county
+kern_wells = over()
+
+# look at time series of some wells
+x = final_wells_wide[23, ] %>% dplyr::select(-APINumber, -Longitude, -Latitude) %>% as.numeric()
+x = na.omit(x)
+plot(1:length(x), y = x, type = 'b')
+
+# time series of wells in aggregate
+all_inj = colSums(final_wells_wide %>% dplyr::select(-APINumber, -Longitude, -Latitude), na.rm = T)
+length(all_inj)
+plot(all_inj, type = 'b')
+
+# convert final_wells into spatial point dataframe
+final_wells_sp = SpatialPointsDataFrame(coords = final_wells %>% dplyr::select(Longitude, Latitude),
+                                        data = final_wells %>% dplyr::select(-Longitude, -Latitude),
+                                        proj4string = CRS( "+proj=longlat +ellps=WGS84 +datum=WGS84" ))
+
+
+
+# convert ca_dat_eq into spatial point dataframe
+ca_eq = ca_dat
+ca_eq_sp = SpatialPointsDataFrame(coords = ca_eq %>% dplyr::select(longitude, latitude),
+                                        data = ca_eq %>% dplyr::select(-longitude, -latitude),
+                                        proj4string = CRS( "+proj=longlat +ellps=WGS84 +datum=WGS84" ))
+                
+
+# make a grid
+
+grid = makegrid(california_points, cellsize = 0.2)
+grid = SpatialPoints(grid, proj4string = california_points@proj4string)
+grid = points2grid(grid)
+grid_sp = SpatialGrid(grid, proj4string = california_points@proj4string)
+grid_sp_df = SpatialGridDataFrame(grid, data.frame(value = 1:length(grid_sp)),
+                                  proj4string = california_points@proj4string)
+
+grid_df = data.frame(grid_sp_df)
+ggplot() +
+  geom_raster(data=grid_df, aes(x=x1, y=x2, fill = value))
+
+# mapping spatial points to grid
+wells_xy = data.frame(x = final_wells$Longitude,
+                y = final_wells$Latitude,
+                id = "A",
+                stringsAsFactors = F)
+coordinates(wells_xy) = ~ x + y 
+proj4string(wells_xy) = proj4string(california_points)
+cellIDs = over(wells_xy, grid_sp_df)
+colnames(cellIDs) = "Grid"
+final_wells = bind_cols(final_wells, cellIDs)
+
+# plot
+
 ggplot() + 
-  geom_polygon(data=california_points_df, aes(x=long,y=lat,group=group)) +
+  geom_polygon(data=california_spoly_df, aes(x=long,y=lat,group=group)) +
   geom_point(data=cal_eq_points_df, aes(x=longitude,y=latitude, color = time)) + 
-  geom_point(data=ca_wells_df2, aes(x=coords.x1,y=coords.x2), color = 'red')
+  geom_point(data=final_wells, aes(x=Longitude,y=Latitude), color = 'red')
+  # geom_polygon(data=grid, aes(x=x1, y=x2))
