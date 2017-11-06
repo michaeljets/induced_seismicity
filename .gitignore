@@ -4,3 +4,8 @@ rawdata/wells/california/shapefiles/AllWells
 docs
 untrack
 .Rproj.user
+ftp_data/
+rawdata/wells/california/raw_injection_wells.csv
+rawdata/wells/california/raw_injection_wells.zip
+tutorial/
+pictures
