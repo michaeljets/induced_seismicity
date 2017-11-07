@@ -126,7 +126,7 @@ for (i in 1:length(unique_grid)){
   water_inj_cumm = convert_cumm(water_inj) / sum(water_inj)
   
   # non cummulative plots
-  path_save = paste0("pictures/eq_inj/not_cumm/", "grid", unique_grid[i], ".jpeg")
+  path_save = paste0("pictures/eq_inj25/not_cumm/", "grid", unique_grid[i], ".jpeg")
   jpeg(filename = path_save,
        width = 1500, height = 600)
   
@@ -141,7 +141,7 @@ for (i in 1:length(unique_grid)){
   plot(eqs, col = 'red', xaxt = 'n', type = 'l',
        main = "Earthquake Time Series",
        xlab = "Time (months)",
-       ylab = "Number of Earthquakes (>3.0)")
+       ylab = "Number of Earthquakes (>2.5)")
   axis(side=1, at=1:length(water_inj), labels=months)
   
   dev.off()
@@ -149,7 +149,7 @@ for (i in 1:length(unique_grid)){
 ###############################################################################  
   
   # cummulative plots
-  path_save = paste0("pictures/eq_inj/cumm/", "grid", unique_grid[i], ".jpeg")
+  path_save = paste0("pictures/eq_inj25/cumm/", "grid", unique_grid[i], ".jpeg")
   jpeg(filename = path_save,
        width = 1500, height = 600)
   
@@ -164,7 +164,7 @@ for (i in 1:length(unique_grid)){
   plot(eqs, col = 'red', xaxt = 'n', type = 'l',
        main = "Earthquake Time Series",
        xlab = "Time (months)",
-       ylab = "Number of Earthquakes (>3.0)")
+       ylab = "Number of Earthquakes (>2.5)")
   axis(side=1, at=1:length(water_inj_cumm), labels=months)
   
   dev.off()
