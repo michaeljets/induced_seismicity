@@ -1,5 +1,6 @@
 .DS_Store
-.Rhistory 
+.Rhistory
+code/.ipynb_checkpoints
  
 rawdata/wells/california/shapefiles/AllWells
 docs
