@@ -1,0 +1,53 @@
+---
+title: "Well & Earthquake Clustering"
+author: "Lisa Jian"
+date: "10/29/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(dplyr)
+library(stringr)
+library(tidyr)
+
+library(maps)
+library(maptools)
+
+library(sp)  # vector data
+library(raster)  # raster data
+library(rgdal)  # input/output, projections
+library(rgeos)  # geometry ops
+library(spdep)  # spatial dependence
+
+library(ggmap)
+# citation('ggmap')
+
+library(spatstat)
+```
+
+## Load the cleaned data
+
+```{r load_data}
+load('clean_data.RData')
+# wells = readRDS("rawdata/wells/california/final_wells.rds")
+# ca_earthquakes = read.csv("rawdata/earthquakes/california/ca_eq_raw.csv")
+```
+
+## Attempt to visualize density of earthquakes
+
+```{r}
+# Create a density plot of all wells and all earthquakes from 1980.
+# Red points + blue density curves = injections
+# Green points + yellow density curves = earthquakes
+ggplot(wells_long) +
+  geom_polygon(data = cal_spolys_df, 
+               aes(x = long, y = lat, group = group)) +
+  geom_point(aes(x = Longitude, y = Latitude), color = 'red', size = 0.1) +
+  geom_density_2d(aes(Longitude, Latitude)) +
+  geom_point(data = ca_eq, aes(x = longitude, y = latitude),
+             color = 'green', size = 0.1) +
+  geom_density_2d(data = ca_eq, aes(longitude, latitude), color = "yellow")
+```
+
+
