@@ -9,3 +9,5 @@ rawdata/wells/california/raw_injection_wells.csv
 rawdata/wells/california/raw_injection_wells.zip
 tutorial/
 pictures
+.RData
+clean_data.RData

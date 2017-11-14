@@ -9,7 +9,7 @@
 # This file uses code and data provided by the United States Geological Survey (USGS).
 # Code from github: https://github.com/usgs/devcorner
 # Gets earthquake data with the following parameters
-#     - Minimum Magnitude: 3.0
+#     - Minimum Magnitude: 2.5 / 3.0
 #     - Start Time: 1980-01-01 00:00:00
 #     - End Time: 2017-10-01 23:59:59
 #     - Minimum Latitude: 32.495
@@ -30,7 +30,7 @@ stime = as.POSIXct("1980-01-01 00:00:00", format = "%Y-%m-%d %H:%M:%S", tz = "UT
 etime = as.POSIXct("2017-10-16 23:59:59", format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
 
 # Get data
-eq_dat = comcathypocsv(minmagnitude = 3,
+eq_dat = comcathypocsv(minmagnitude = 2.5,
                     starttime = stime,
                     endtime = etime,
                     minlatitude = 32.495,
@@ -40,4 +40,4 @@ eq_dat = comcathypocsv(minmagnitude = 3,
                     eventtype = "earthquake")
 
 # Write data
-write.csv(eq_dat, "rawdata/earthquakes/california/ca_eq_raw.csv")
+write.csv(eq_dat, "rawdata/earthquakes/california/ca_eq_raw25.csv", row.names = F)
