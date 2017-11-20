@@ -52,11 +52,8 @@ def largest_dot_normalized(ranks1, ranks2, min_lag=0, max_lag=12, use_zeros=Fals
     across all possible lags specified by `min_lag` and `max_lag`. 
     Inclusive of both `min_lag` and `max_lag`.
     """
-    # Used to get the dot normalized for provided arguments, varying lag
-    def dot_normalized_call(lag):
-        return dot_normalized(ranks1, ranks2, lag, use_zeros)
-
-    dots = list(map(dot_normalized_call, range(min_lag, max_lag + 1)))
+    dots = [dot_normalized(ranks1, ranks2, lag, use_zeros) \
+                for lag in range(min_lag, max_lag + 1)]
     return np.amax(dots)
 
 def simulate(ranks1, ranks2, num_trials=10000, min_lag=0, max_lag=12, use_zeros=False):
