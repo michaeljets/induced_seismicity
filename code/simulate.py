@@ -72,3 +72,12 @@ def simulate(ranks1, ranks2, num_trials=10000, min_lag=0, max_lag=12, use_zeros=
     ranks1 = ranks1.copy()
 
     return np.array(list(map(simulate_single_trial, range(num_trials))))
+
+def p_value(dist, observed):
+    """
+    Given an empirical distribution `dist`, this function returns the
+    probability of seeing `observed` or larger (i.e. this is one-sided).
+    The empirical `dist`, for instance, would look like the return of
+    the `simulate` function above.
+    """
+    return np.sum(dist >= observed) / float(len(dist))
