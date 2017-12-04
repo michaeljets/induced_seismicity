@@ -22,7 +22,7 @@ def block_permute(ts, start, length):
     nb_blocks = np.floor((len(ts) - len(ts[: (start + length-1)]))/length) +1
     end = int(start -1 + nb_blocks * length)
 
-    shuffle_ts = ts[(start -1):end]
+    shuffle_ts = ts[(start -1):end].copy()
     shuffle_blocks = shuffle_ts.reshape(len(shuffle_ts)//length, length)
     np.random.shuffle(shuffle_blocks)
     return shuffle_blocks.ravel()
