@@ -1,83 +1,177 @@
+# simulate.py
+# Frank Mei, Lisa Jian, Michael Jetsupphasuk, My Dinh
+# 04 December, 2017
+# Simulates water and earthquake data to test the power of lag-adjusted Spearman's
+
+"""
+Context: 
+
+Fill me in!
+
+"""
+
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 
-def dot_normalized(ranks1, ranks2, lag=0, use_zeros=False):
+from scipy.stats import rankdata
+from scipy.stats import pearsonr
+from datetime import datetime
+
+import sim_functions as sim
+import csv
+import random
+
+##############################################################################
+
+## GET TIME TO RUN SCRIPT
+starttime = datetime.now()
+
+##############################################################################
+
+## LOAD IN REAL WATER DATA
+
+# `water` is a list of lists with each internal list representing water
+# injections from 1980-2017 (length 456) for a distinct block (87 blocks
+# in total). 
+
+water = []
+with open('data/final_water.csv') as file:
+    f = csv.reader(file, delimiter = ',')
+    next(f)
+    for row in f:
+        row = [float(r) for r in row]
+        water.append(row)
+
+# pick a random grid to take water injection from
+# random.seed(157157)
+random_water = random.sample(range(len(water)), 1)[0]
+use_water = np.array(water[random_water])
+
+
+##############################################################################
+
+## EARTHQUAKE GENERATION FUNCTIONS
+
+def get_eq_simple(water):
     """
-    Shifts `ranks2` forward by `lag` number of entries.
-    Removes the tail ends of the rank vectors that fall off
-    after shifting. Then returns the dot product normalized
-    by the number of entries that were used in the dot.
-    For instance, suppose
-         ranks1  = [1, 2, 3, 4]
-         ranks2  = [4, 3, 2, 1]
-         lag     = 2.
-    After shifting and removing the fall off, we have
-         ranks1' = [3, 4]
-         ranks2' = [4, 3]
-    The normalized dot is (3 * 4 + 4 * 3) / 2.
-
-    Assumes that len(ranks1) == len(ranks2) and all ranks
-    are non-negative.
-
-    Args:
-        ranks1    (1D np.array) : Ranks for first dataset
-        ranks2    (1D np.array) : Ranks for second dataset
-        lag       (int)         : Number of entries to shift
-        use_zeros (bool)        : Use zeros in rank vectors
-                                  for normalizing
-    Returns:
-        Normalized dot product after shifting by `lag`
+    Simulates earthquake data with a poisson process with a dependency on water at lag 0.
     """
-    assert len(ranks1) == len(ranks2), \
-           "Rank vectors are not the same length"
 
-    # Count the number of entries that would be zeroed out
-    # in either vector
-    num_zeros = 0
-    if not use_zeros:
-        num_zeros = np.sum((ranks1 * ranks2) == 0)
+    eq = np.array([np.random.poisson(np.exp(np.random.randn(1))*(0.0000001+0.00001*water[i])) 
+                   for i in range(len(water))])
+    return eq
 
-    # Pad rank vectors with zeros (from front w/ ranks1, 
-    # from back w/ ranks2); equivalent to shifting
-    padded_ranks1 = np.append(ranks1, np.zeros(lag))
-    padded_ranks2 = np.insert(ranks2, 0, np.zeros(lag))
 
-    # Normalization constant
-    num_valid = float(len(ranks1) - lag - num_zeros)
-
-    return np.dot(padded_ranks1, padded_ranks2) / num_valid
-
-def largest_dot_normalized(ranks1, ranks2, min_lag=0, max_lag=12, use_zeros=False):
+def get_eq_timelag(water):
     """
-    Returns the largest normalized dot product of the two rank vectors
-    across all possible lags specified by `min_lag` and `max_lag`. 
-    Inclusive of both `min_lag` and `max_lag`.
+    Simulates earthquake data with a poisson process with a dependency on water at lag 0.
+    Also includes a dependency on previous earthquake data.
     """
-    dots = [dot_normalized(ranks1, ranks2, lag, use_zeros) \
-                for lag in range(min_lag, max_lag + 1)]
-    return np.amax(dots)
 
-def simulate(ranks1, ranks2, num_trials=10000, min_lag=0, max_lag=12, use_zeros=False):
-    """
-    Given two rank vectors, repeatedly permutes ranks and gets 
-    the largest normalized dot product. Return all simulated values.
-    Like `dot_normalized()`, this assumes we are shifting `rank2`
-    forward.
-    """
-    # Used to simulate a single trial. The input is not used
-    def simulate_single_trial(_):
-        np.random.shuffle(ranks1)
-        return largest_dot_normalized(ranks1, ranks2, min_lag, max_lag, use_zeros)
-    
-    # Make a copy for ranks1 because np.random.shuffle is in place
-    ranks1 = ranks1.copy()
+    eq = np.random.poisson(np.exp(np.random.randn(1))*(0.0000001+0.00001*water[0]))
+    for i in range(1, len(water)):
+        new = np.random.poisson(np.exp(np.random.randn(1))*(0.0000001+0.00001*water[i]) \
+                                +np.exp(np.random.randn(1))*0.047*eq[i-1])
+        eq = np.concatenate([eq, new])        
+    return eq
 
-    return np.array(list(map(simulate_single_trial, range(num_trials))))
 
-def p_value(dist, observed):
+def get_eq(water):
     """
-    Given an empirical distribution `dist`, this function returns the
-    probability of seeing `observed` or larger (i.e. this is one-sided).
-    The empirical `dist`, for instance, would look like the return of
-    the `simulate` function above.
+    Simulates earthquake data with a poisson process with a dependency on water at lag 0-4.
+    Also includes a dependency on previous earthquake data.
     """
-    return np.sum(dist >= observed) / float(len(dist))
+
+    eq = np.random.poisson(np.exp(np.random.randn(1))*(0.0000001+0.00001*water[0]))
+    for i in range(1, len(water)):
+        if i < 4:
+            new = np.random.poisson(np.exp(np.random.randn(1))*(0.0000001+0.00001*water[i]) + \
+                                    np.exp(np.random.randn(1))*0.047*eq[i-1])
+        else:
+            new = np.random.poisson(np.exp(np.random.randn(1))*(0.0000001 + \
+                                                                 np.random.uniform(1)*0.000001*water[i] + \
+                                                                 np.random.uniform(1)*0.0000009*water[i-1] + \
+                                                                 np.random.uniform(1)*0.0000007*water[i-2] + \
+                                                                 np.random.uniform(1)*0.0000006*water[i-3] + \
+                                                                 np.random.uniform(1)*0.0000006*water[i-4]) + \
+                                    np.exp(np.random.randn(1))*0.047*eq[i-1])
+
+        eq = np.concatenate([eq, new])
+    return eq
+
+##############################################################################
+
+# ## SIMULATE AND PLOT
+
+# # generate earthquake data
+# # np.random.seed(157157)
+# eqs = get_eq(use_water)
+
+# # plot water and earthquake data
+# plt.plot(use_water)
+# plt.show()
+
+# plt.plot(eqs)
+# plt.show()
+
+# # rank data
+# eqs_rank = rankdata(eqs)
+# water_rank = rankdata(use_water)
+
+# # run simulation
+# pval = sim.corr_test(water_rank, eqs_rank, norm = 2, plot = False)
+# print("P-value: ", pval)
+
+# # test out which `norm` typically performs well
+# norms_totry = np.array([2, 5, 10, np.inf])
+
+# pvalues = []
+# for n in norms_totry:
+#     p = sim.corr_test(water_rank, eqs_rank, norm = n, plot = False)
+#     pvalues.append(p)
+
+# print(norms_totry)
+# print(pvalues)
+
+##############################################################################
+
+## PICK P-NORM
+
+with open('data/pnorm_pval.csv', 'w', newline='') as file:
+
+    norms_totry = np.array([2, 5, 10, np.inf])
+    filewriter = csv.writer(file, delimiter=',')
+    filewriter.writerow(norms_totry)
+
+    for i in range(10):
+
+        # random pick of water data
+        random_water = random.sample(range(len(water)), 1)[0]
+        use_water = np.array(water[random_water])
+
+        # generate earthquake data
+        eqs = get_eq(use_water)
+
+        # rank data
+        eqs_rank = rankdata(eqs)
+        water_rank = rankdata(use_water)
+
+        # run simulation for the 4 values of p_norm
+        pvalues = []
+
+        for n in norms_totry:
+            p = sim.corr_test(water_rank, eqs_rank, norm = n, plot = False)
+            pvalues.append(p)
+
+        # write to csv file
+        filewriter.writerow(pvalues)
+
+
+##############################################################################
+
+## GET TIME TO RUN SCRIPT
+
+print(datetime.now() - starttime)
+
+
