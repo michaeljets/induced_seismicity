@@ -55,7 +55,7 @@ def simulate(ranks1, ranks2, num_trials=100000, lag=12, norm=np.inf):
     return np.array(list(map(simulate_single_trial, range(num_trials))))
 
 
-def simulate_by_block(ranks1, ranks2, bstart, bsize, lag=12, norm=np.inf, num_trials=100000):
+def simulate_by_block(ranks1, ranks2, bstart, bsize, lag=12, norm=np.inf, num_trials=10000):
     """
     Like `simulate` above except permutes by block specified by `bstart`
     and `bsize`.
@@ -83,7 +83,7 @@ def p_value(dist, observed):
     return np.sum(dist >= observed) / float(len(dist))
 
 
-def corr_test(lst1, lst2, lag=12, norm=np.inf, bstart=0, bsize=6, plot=True):
+def corr_test(lst1, lst2, lag=12, norm=np.inf, bstart=0, bsize=6, plot=True, filename=None):
     """
     Combining simulation into a test that returns a p-value. Option
     to plot.
@@ -94,6 +94,10 @@ def corr_test(lst1, lst2, lag=12, norm=np.inf, bstart=0, bsize=6, plot=True):
     if plot:
         plt.hist(s, bins = 'auto')
         plt.axvline(x = og, color = 'red')
+        plt.xlabel('{}-norm of correlations across {} lags'.format(norm, lag))
+        plt.ylabel('counts')
+        if filename:
+            plt.savefig(filename)
         plt.show()
     return p_value(s, og)
 
