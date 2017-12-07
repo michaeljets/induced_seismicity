@@ -38,7 +38,7 @@ starttime = datetime.now()
 # in total). 
 
 water = []
-with open('../data/final_water.csv') as file:
+with open('data/final_water.csv') as file:
     f = csv.reader(file, delimiter = ',')
     next(f)
     for row in f:
@@ -142,7 +142,7 @@ use_water = np.array(water[random_water])
 
 # ## LOOK AT POWER OF MAX_LAGS
 
-with open('../data/lags_pvals.csv', 'w', newline='') as file:
+with open('data/lags_pvals.csv', 'w', newline='') as file:
 
     lags = np.array([0, 3, 6, 9, 12])
     filewriter = csv.writer(file, delimiter=',')
