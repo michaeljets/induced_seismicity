@@ -2,7 +2,7 @@
 # CLEAN DATA / SET UP WORKING ENVIRONMENT
 
 # Author: Michael Jetsupphasuk
-# Last Updated: 31 October, 2017
+# Last Updated: 07 December, 2017
 
 # This file creates the relevant data frames and Spatial objects for further analysis. 
 
@@ -61,11 +61,10 @@ library(spatstat)
 # GLOBAL PARAMETERS -------------------------------------------------------
 
 my_crs = CRS( "+proj=longlat +ellps=WGS84 +datum=WGS84" )
-all_dates = sort(unique(wells_long$InjectionDate))
 
 fill_dates <- function(df, alldates,
                        mindate="1980-01-01 00:00:00", 
-                       maxdate="2017-12-01 00:00:00"){
+                       maxdate="2017-06-01 00:00:00"){
   
   ## Inserts the missing dates before/after the min/max date in `df`. If there are 
   ## missing dates in between the min/max date in `df`, they are interpolated by 
@@ -275,7 +274,13 @@ wells_long = inner_join(inj_wells, well_locs_df, by = c("APINumber")) %>%
                        Latitude = coords.x2) %>%
                 filter(Year >= 1980,
                        WellTypeCode == "WD",
-                       Longitude < -80) %>%
+                       Longitude < -80,
+                       InjectionDate != "2017-07-01 00:00:00",
+                       InjectionDate != "2017-08-01 00:00:00",
+                       InjectionDate != "2017-09-01 00:00:00",
+                       InjectionDate != "2017-10-01 00:00:00",
+                       InjectionDate != "2017-11-01 00:00:00",
+                       InjectionDate != "2017-12-01 00:00:00") %>%
                 distinct()
 
 # mapping long wells to grid
@@ -290,7 +295,7 @@ wells_long$Grid = cellIDs
 
 # handle missing injection dates
 
-all_dates = unique(wells_long$InjectionDate)
+all_dates = sort(unique(wells_long$InjectionDate))
 
 wells_long = wells_long %>%
                 group_by(APINumber) %>%
@@ -332,7 +337,7 @@ wells_wide_sp = SpatialPointsDataFrame(coords = wells_wide %>%
 
 # WATER AND EARTHQUAKE BY GRID --------------------------------------------
 
-# flatten across blocks
+# flatten water across blocks
 grid_inj = wells_wide %>%
   dplyr::select(-APINumber, -Longitude, -Latitude) %>%
   group_by(Grid) %>%
@@ -355,6 +360,10 @@ final_blocks = sort(eq_block$Grid[eq_block$earthquakes > 0])
 # final data frames
 
 # convert time in ca_eq to factor with correct levels
+months = substr(colnames(wells_wide %>% 
+                           dplyr::select(-APINumber, -Longitude, -Latitude, -Grid)), 
+                start = 2, stop = 8)
+
 ca_eq = ca_eq %>%
   mutate(time = as.character(time),
          time = substr(time, 1, 7),
@@ -368,7 +377,7 @@ final_eqs = ca_eq %>%
   group_by(Grid) %>%
   dplyr::select(time) %>%
   table() %>%
-  matrix(87, 456) %>%
+  matrix(87, 450) %>%
   data.frame()
 
 # final water time series
@@ -451,7 +460,7 @@ write.table(final_blocks, file = "data/final_blocks.txt", row.names = F, col.nam
 # 
 #=================================================#
 # # Don't use all data; use let's say 400
-# B = 10000
+# B = 50
 # max_lag = c()
 # a = 1:150
 # b = 1:200
@@ -460,10 +469,15 @@ write.table(final_blocks, file = "data/final_blocks.txt", row.names = F, col.nam
 #   b = sample(b, 200, replace=F)
 #   for (l in 0:12){
 #     b2 = b[(l+1):(150+l)]
-#     b2 = rank(b2) # re-rank
+#     # b2 = rank(b2) # re-rank
+#     if (length(b2) != 150) (warning("what the fuck"))
 #     ccfs[l+1] = cor(a,b2)
 #   }
-#   max_lag[i] = which(ccfs == max(ccfs))[1] - 1
+#   print(round(ccfs, 2))
+#   argmax = which(ccfs == max(ccfs))
+#   print(argmax - 1)
+#   if (length(argmax) != 1) (warning("aight then"))
+#   max_lag[i] = argmax[sample(1:length(argmax), 1)] - 1 # choose random if multiple maxima
 # }
 # max_lag2 = factor(max_lag, levels = 0:12)
 # plot(table(max_lag2))
