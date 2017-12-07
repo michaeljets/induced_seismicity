@@ -48,11 +48,11 @@ def get_eq(water, mu=0.0000001, alpha=0.047, betas=[0.0000006, 0.0000006, 0.0000
                                     np.exp(np.random.randn(1)) * alpha * eq[i-1])
         else:
             new = np.random.poisson(np.exp(np.random.randn(1)) * (mu + \
-                                                                 np.random.uniform(1) * betas[4] * water[i] + \
-                                                                 np.random.uniform(1) * betas[3] * water[i-1] + \
-                                                                 np.random.uniform(1) * betas[2] * water[i-2] + \
-                                                                 np.random.uniform(1) * betas[1] * water[i-3] + \
-                                                                 np.random.uniform(1) * betas[0] * water[i-4]) + \
+                                                                 np.random.uniform() * betas[4] * water[i] + \
+                                                                 np.random.uniform() * betas[3] * water[i-1] + \
+                                                                 np.random.uniform() * betas[2] * water[i-2] + \
+                                                                 np.random.uniform() * betas[1] * water[i-3] + \
+                                                                 np.random.uniform() * betas[0] * water[i-4]) + \
                                     np.exp(np.random.randn(1)) * alpha * eq[i-1])
 
         eq = np.concatenate([eq, new])
