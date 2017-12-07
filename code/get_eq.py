@@ -9,6 +9,7 @@ Context:
 Fill me in!
 
 """
+import numpy as np
 
 def get_eq_simple(water, mu=0.0000001, beta=0.00001):
     """
