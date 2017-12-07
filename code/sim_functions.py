@@ -126,7 +126,7 @@ def block_permute(ts, start, length):
     assert nb_blocks > 1, "block size is too big"
     end = int(start + nb_blocks*length)
 
-    shuffle_ts = ts[start:end]
+    shuffle_ts = ts[start:end].copy()
     shuffle_blocks = shuffle_ts.reshape(len(shuffle_ts)//length, length)
     np.random.shuffle(shuffle_blocks)
     return shuffle_blocks.ravel(), end
