@@ -10,6 +10,7 @@ Fill me in!
 
 """
 
+import math
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -24,19 +25,20 @@ def largest_corr(rank1, rank2, lag=12, norm=np.inf):
     Given two ranked vectors, take a window of length n-12,
     get a list of lag correlations by shifting the second rank vector,
     return the p-norm correlation in the list (default is maximum correlation).
-    """
 
-    if np.all(np.isnan(rank1)) or np.all(np.isnan(rank2)):
-    	print(rank1)
-    	print(rank2)
+    For special case of one list containing all same value (e.g. [1,1,1]), the
+    correlation will equal one from a divide by 0 error (since sd is 0). For
+    these cases, correlation is coerced to 0.
+    """
 
     r1 = rank1[:-12]
     corrs = list(map(lambda i: pearsonr(r1, rank2[i:(len(r1)+i)])[0], range(lag+1)))
+    corrs = [0 if math.isnan(cor) else cor for cor in corrs]
     # return np.argmax(corrs) # which lag has the maximum correlation
     return np.linalg.norm(corrs, ord=norm)
 
 
-def simulate(ranks1, ranks2, num_trials=10000, lag=12, norm=np.inf):
+def simulate(ranks1, ranks2, num_trials=100000, lag=12, norm=np.inf):
     """
     Given two ranked vectors, repeatedly permute ranks1 and get the 
     p-norm correlation for all lags specified. Return all simulated values.
@@ -53,7 +55,7 @@ def simulate(ranks1, ranks2, num_trials=10000, lag=12, norm=np.inf):
     return np.array(list(map(simulate_single_trial, range(num_trials))))
 
 
-def simulate_by_block(ranks1, ranks2, bstart, bsize, lag=12, norm=np.inf, num_trials=10000):
+def simulate_by_block(ranks1, ranks2, bstart, bsize, lag=12, norm=np.inf, num_trials=100000):
     """
     Like `simulate` above except permutes by block specified by `bstart`
     and `bsize`.

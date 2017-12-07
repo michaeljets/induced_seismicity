@@ -102,70 +102,60 @@ def get_eq(water):
 
 ##############################################################################
 
-# ## SIMULATE AND PLOT
+## SIMULATE AND PLOT
 
-# # generate earthquake data
-# # np.random.seed(157157)
-# eqs = get_eq(use_water)
+# generate earthquake data
+# np.random.seed(157157)
+eqs = get_eq(use_water)
 
-# # plot water and earthquake data
-# plt.plot(use_water)
-# plt.show()
+# plot water and earthquake data
+plt.plot(use_water)
+plt.show()
 
-# plt.plot(eqs)
-# plt.show()
+plt.plot(eqs)
+plt.show()
 
-# # rank data
-# eqs_rank = rankdata(eqs)
-# water_rank = rankdata(use_water)
+# rank data
+eqs_rank = rankdata(eqs)
+water_rank = rankdata(use_water)
 
-# # run simulation
-# pval = sim.corr_test(water_rank, eqs_rank, norm = 2, plot = False)
-# print("P-value: ", pval)
+# run simulation
+pval = sim.corr_test(water_rank, eqs_rank, norm = 2, plot = True)
+print("P-value: ", pval)
 
-# # test out which `norm` typically performs well
-# norms_totry = np.array([2, 5, 10, np.inf])
-
-# pvalues = []
-# for n in norms_totry:
-#     p = sim.corr_test(water_rank, eqs_rank, norm = n, plot = False)
-#     pvalues.append(p)
-
-# print(norms_totry)
-# print(pvalues)
 
 ##############################################################################
 
-## PICK P-NORM
+# ## PICK P-NORM
 
-with open('data/pnorm_pval.csv', 'w', newline='') as file:
+# with open('data/pnorm_pval.csv', 'w', newline='') as file:
 
-    norms_totry = np.array([2, 5, 10, np.inf])
-    filewriter = csv.writer(file, delimiter=',')
-    filewriter.writerow(norms_totry)
+#     norms_totry = np.array([2, 5, np.inf])
+#     filewriter = csv.writer(file, delimiter=',')
+#     filewriter.writerow(norms_totry)
 
-    for i in range(10):
+#     for i in range(25):
 
-        # random pick of water data
-        random_water = random.sample(range(len(water)), 1)[0]
-        use_water = np.array(water[random_water])
+#         # random pick of water data
+#         random_water = random.sample(range(len(water)), 1)[0]
+#         use_water = np.array(water[random_water])
 
-        # generate earthquake data
-        eqs = get_eq(use_water)
+#         # generate earthquake data
+#         eqs = get_eq(use_water)
 
-        # rank data
-        eqs_rank = rankdata(eqs)
-        water_rank = rankdata(use_water)
+#         # rank data
+#         eqs_rank = rankdata(eqs)
+#         water_rank = rankdata(use_water)
 
-        # run simulation for the 4 values of p_norm
-        pvalues = []
+#         # run simulation for the 4 values of p_norm
+#         pvalues = []
 
-        for n in norms_totry:
-            p = sim.corr_test(water_rank, eqs_rank, norm = n, plot = False)
-            pvalues.append(p)
+#         for n in norms_totry:
+#             p = sim.corr_test(water_rank, eqs_rank, norm = n, plot = False)
+#             pvalues.append(p)
 
-        # write to csv file
-        filewriter.writerow(pvalues)
+#         # write to csv file
+#         filewriter.writerow(pvalues)
 
 
 ##############################################################################
