@@ -29,7 +29,8 @@
 #     - Wells mapped to grid (from above)
 #     - Handles missing data
 #         + appends 0 injection for dates before first / after last
-#         + missing dates in between the first and last date have NA injection
+#         + missing dates in between the first and last date have injection equal
+#           to the average of the nearest injections before/after the missing
 #     - Creates data in following formats:
 #         + long data frame (each row a combination of well, injection date)
 #         + wide data frame (each row is a unique well)
@@ -460,7 +461,7 @@ write.table(final_blocks, file = "data/final_blocks.txt", row.names = F, col.nam
 # 
 #=================================================#
 # # Don't use all data; use let's say 400
-# B = 50
+# B = 10000
 # max_lag = c()
 # a = 1:150
 # b = 1:200

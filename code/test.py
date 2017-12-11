@@ -66,36 +66,36 @@ grids = f.read().splitlines()
 
 ## APPLY TEST TO EACH BLOCK
 
-# zip water, earthquake, and grid data
-water_eqs = list(zip(water, eqs, grids))
+# # zip water, earthquake, and grid data
+# water_eqs = list(zip(water, eqs, grids))
 
-# apply test to every grid
-pvalues = []
-for block in water_eqs:
-    w = rankdata(block[0])
-    eq = rankdata(block[1])
-    grid = block[2]
-    pval = sim.corr_test(w, eq, plot = False, norm = 2)
-    if pval == 0:
-        pval = 0.00001
-    pvalues.append(pval)
-    print("Grid: ", grid)
-    print("P-value: ", pval)
+# # apply test to every grid
+# pvalues = []
+# for block in water_eqs:
+#     w = rankdata(block[0])
+#     eq = rankdata(block[1])
+#     grid = block[2]
+#     pval = sim.corr_test(w, eq, plot = False, norm = 2)
+#     if pval == 0:
+#         pval = 0.00001
+#     pvalues.append(pval)
+#     print("Grid: ", grid)
+#     print("P-value: ", pval)
 
-# save results
-with open("data/pval_blocks.csv", "w", newline = '') as file:
-    filewriter = csv.writer(file, delimiter = ',')
-    for i in range(len(pvalues)):
-        filewriter.writerow([pvalues[i], grids[i]])
+# # save results
+# with open("data/pval_blocks.csv", "w", newline = '') as file:
+#     filewriter = csv.writer(file, delimiter = ',')
+#     for i in range(len(pvalues)):
+#         filewriter.writerow([pvalues[i], grids[i]])
 
-with open("data/pval_combined.csv", "w", newline = '') as file:
-    filewriter = csv.writer(file, delimiter = ',')
-    filewriter.writerow([combine_pvalues(pvalues)[1]])
+# with open("data/pval_combined.csv", "w", newline = '') as file:
+#     filewriter = csv.writer(file, delimiter = ',')
+#     filewriter.writerow([combine_pvalues(pvalues)[1]])
 
-# print results
-sig_blocks = np.sum(np.array(pvalues) <= 0.05)
-print("Percent of blocks 'significant': ", sig_blocks / len(pvalues))
-print("Combined p-value (Fisher's): ", combine_pvalues(pvalues)[1])
+# # print results
+# sig_blocks = np.sum(np.array(pvalues) <= 0.05)
+# print("Percent of blocks 'significant': ", sig_blocks / len(pvalues))
+# print("Combined p-value (Fisher's): ", combine_pvalues(pvalues)[1])
 
 
 

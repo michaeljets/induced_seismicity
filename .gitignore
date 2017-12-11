@@ -13,6 +13,5 @@ tutorial/
 pictures
 .RData
 clean_data.RData
-documentation/.ipynb_checkpoints/
-documentation/hypothesis_testing.ipynb
 code/__pycache__.*
+documentation/

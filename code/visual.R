@@ -64,12 +64,11 @@ axis(side=1, at=1:length(all_inj), labels=months)
 
 cal_spolys_df = fortify(cal_spolys)
 grid_df = data.frame(SpatialPoints(grid, my_crs)@coords)
-wells_wide$color = 'red'
 ggplot() +
   geom_polygon(data = cal_spolys_df, aes(x = long, y = lat, group = group)) +
   geom_tile(data = grid_df, aes(x = x1, y = x2), color = 'yellow', alpha = 0) +
-  geom_point(data = ca_eq, aes(x = longitude, y = latitude, color = time_year), show.legend = T, size = .75) +
-  geom_point(data = wells_wide, aes(x = Longitude, y = Latitude), show.legend = T, size = .75, color = 'red')
+  geom_point(data = ca_eq, aes(x = longitude, y = latitude, color = time_year), show.legend = F, size = .75) +
+  geom_point(data = wells_wide, aes(x = Longitude, y = Latitude), show.legend = F, size = .75, color = 'red')
   
 
 
