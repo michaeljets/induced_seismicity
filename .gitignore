@@ -15,4 +15,4 @@ pictures
 clean_data.RData
 documentation/.ipynb_checkpoints/
 documentation/hypothesis_testing.ipynb
-code/__pycache__*
+code/__pycache__.*
