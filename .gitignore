@@ -13,5 +13,5 @@ tutorial/
 pictures
 .RData
 clean_data.RData
-code/__pycache__.*
+code/__pycache__/
 documentation/

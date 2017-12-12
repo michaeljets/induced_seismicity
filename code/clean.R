@@ -404,6 +404,7 @@ save.image()
 write.csv(final_water, file = "data/final_water.csv", row.names = F)
 write.csv(final_eqs, file = "data/final_eqs.csv", row.names = F)
 write.table(final_blocks, file = "data/final_blocks.txt", row.names = F, col.names = F)
+write.table(months, file = "data/months.txt", row.names = F, col.names = F)
 
 
 # ARCHIVED CODE -----------------------------------------------------------

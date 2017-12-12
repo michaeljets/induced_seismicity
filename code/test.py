@@ -31,7 +31,7 @@ import random
 # in total). 
 
 water = []
-with open('data/final_water.csv') as file:
+with open('data/final_water_ok.csv') as file:
     f = csv.reader(file, delimiter = ',')
     next(f)
     for row in f:
@@ -46,7 +46,7 @@ with open('data/final_water.csv') as file:
 # from 1980-2017 (length 456) for a distinct block (87 blocks in total). 
 
 eqs = []
-with open('data/final_eqs.csv') as file:
+with open('data/final_eqs_ok.csv') as file:
     f = csv.reader(file, delimiter = ',')
     next(f)
     for row in f:
@@ -58,7 +58,7 @@ with open('data/final_eqs.csv') as file:
 
 ## LOAD IN GRID IDs
 
-f = open('data/final_blocks.txt', 'r')
+f = open('data/final_blocks_ok.txt', 'r')
 grids = f.read().splitlines()
 
 
@@ -66,36 +66,36 @@ grids = f.read().splitlines()
 
 ## APPLY TEST TO EACH BLOCK
 
-# # zip water, earthquake, and grid data
-# water_eqs = list(zip(water, eqs, grids))
+# zip water, earthquake, and grid data
+water_eqs = list(zip(water, eqs, grids))
 
-# # apply test to every grid
-# pvalues = []
-# for block in water_eqs:
-#     w = rankdata(block[0])
-#     eq = rankdata(block[1])
-#     grid = block[2]
-#     pval = sim.corr_test(w, eq, plot = False, norm = 2)
-#     if pval == 0:
-#         pval = 0.00001
-#     pvalues.append(pval)
-#     print("Grid: ", grid)
-#     print("P-value: ", pval)
+# apply test to every grid
+pvalues = []
+for block in water_eqs:
+    w = rankdata(block[0])
+    eq = rankdata(block[1])
+    grid = block[2]
+    pval = sim.corr_test(w, eq, plot = False, norm = 2)
+    if pval == 0:
+        pval = 0.00001
+    pvalues.append(pval)
+    print("Grid: ", grid)
+    print("P-value: ", pval)
 
-# # save results
-# with open("data/pval_blocks.csv", "w", newline = '') as file:
-#     filewriter = csv.writer(file, delimiter = ',')
-#     for i in range(len(pvalues)):
-#         filewriter.writerow([pvalues[i], grids[i]])
+# save results
+with open("results/pval_blocks_ok.csv", "w", newline = '') as file:
+    filewriter = csv.writer(file, delimiter = ',')
+    for i in range(len(pvalues)):
+        filewriter.writerow([pvalues[i], grids[i]])
 
-# with open("data/pval_combined.csv", "w", newline = '') as file:
-#     filewriter = csv.writer(file, delimiter = ',')
-#     filewriter.writerow([combine_pvalues(pvalues)[1]])
+with open("results/pval_combined_ok.csv", "w", newline = '') as file:
+    filewriter = csv.writer(file, delimiter = ',')
+    filewriter.writerow([combine_pvalues(pvalues)[1]])
 
-# # print results
-# sig_blocks = np.sum(np.array(pvalues) <= 0.05)
-# print("Percent of blocks 'significant': ", sig_blocks / len(pvalues))
-# print("Combined p-value (Fisher's): ", combine_pvalues(pvalues)[1])
+# print results
+sig_blocks = np.sum(np.array(pvalues) <= 0.05)
+print("Percent of blocks 'significant': ", sig_blocks / len(pvalues))
+print("Combined p-value (Fisher's): ", combine_pvalues(pvalues)[1])
 
 
 
