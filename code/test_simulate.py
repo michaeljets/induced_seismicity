@@ -1,7 +1,7 @@
 import unittest
 import random
 import sim_functions
-
+import numpy as np
 
 class TestLargestCor(unittest.TestCase):
 	def test_corr(self):
