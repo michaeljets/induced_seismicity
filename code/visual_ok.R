@@ -106,7 +106,7 @@ for (i in 1:length(blocks)){
   plot(as.numeric(eqs[i, ]), col = 'red', xaxt = 'n', type = 'l',
        main = "Earthquake Time Series",
        xlab = "Time (months)",
-       ylab = "Number of Earthquakes (>2.5)")
+       ylab = "Number of Earthquakes (>3.0)")
   axis(side=1, at=1:ncol(eqs), labels=months)
   
   dev.off()
@@ -131,7 +131,7 @@ for (i in 1:length(blocks)){
   plot(convert_cumm(as.numeric(eqs[i, ])), col = 'red', xaxt = 'n', type = 'l',
        main = "Cumm. Earthquake Time Series",
        xlab = "Time (months)",
-       ylab = "Number of Earthquakes (>2.5)")
+       ylab = "Number of Earthquakes (>3.0)")
   axis(side=1, at=1:ncol(eqs), labels=months)
   
   dev.off()
