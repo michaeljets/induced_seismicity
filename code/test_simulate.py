@@ -25,7 +25,7 @@ class TestLargestCor(unittest.TestCase):
 		lag = 4
 		norm = 2
 		expected = 0
-		res = sim_functions.largest_corrr(rank1 = r1, rank2 = r2, lag = lag, norm = norm)
+		res = sim_functions.largest_corr(rank1 = r1, rank2 = r2, lag = lag, norm = norm)
 		self.assertEqual(expected, res)
 
 class TestSimulateBlock(unittest.TestCase):
@@ -73,17 +73,18 @@ class TestSimulateBlock(unittest.TestCase):
 		norm =2 
 		num_trials = 10
 		res = sim_functions.simulate_by_block(r1, r2, start, bsize, lag = lag, norm = norm, num_trials = num_trials)
-		expected = np.zeros(len(num_trials))
+		expected = np.zeros(num_trials)
 		res_bool = np.all(res == expected)
 		self.assertTrue(res_bool)
 
 class TestPvalue(unittest.TestCase):
+	def test_p_value(self):
 		"""
 		check if p value is between 0 and 1
 		"""
 		dist = np.arange(3,20)
 		obs = 10
-		res = p_value(dist, obs)
+		res = sim_functions.p_value(dist, obs)
 		expected_bool = 0 <= res <= 1
 		self.assertTrue(expected_bool)
 
