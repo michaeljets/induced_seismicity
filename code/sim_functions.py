@@ -38,7 +38,7 @@ def largest_corr(rank1, rank2, lag=12, norm=np.inf):
     return np.linalg.norm(corrs, ord=norm)
 
 
-def simulate(ranks1, ranks2, num_trials=100000, lag=12, norm=np.inf):
+def simulate(ranks1, ranks2, num_trials=10000, lag=12, norm=np.inf):
     """
     Given two ranked vectors, repeatedly permute ranks1 and get the 
     p-norm correlation for all lags specified. Return all simulated values.

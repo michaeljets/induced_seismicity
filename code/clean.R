@@ -16,6 +16,7 @@
 # Grid:
 #     - Creates a 0.2 x 0.2 degree long/lat grid
 #     - Creates a spatial grid (`sp`)
+#     - Optional parameter `grid_shift` to shift the grid; default is 0
 
 # Earthquakes:
 #     - See scrape/get_eq.R for query information
@@ -181,11 +182,14 @@ proj4string(cal_spolys) = CRS( "+proj=longlat +ellps=WGS84 +datum=WGS84" )
 grid = makegrid(cal_points, cellsize = 0.2)
 grid = SpatialPoints(grid, proj4string = my_crs)
 grid = points2grid(grid)
-grid_sp = SpatialGrid(grid, proj4string = my_crs)
 
-# grid_sp_df = SpatialGridDataFrame(grid, data.frame(value = 1:length(grid_sp)),
-#                                   proj4string = my_crs)
-# grid_df = data.frame(grid_sp_df)
+# option to shift the grid
+grid_shift = .1
+grid_name = '_ne1' # to be appended to data file names
+grid@cellcentre.offset = grid@cellcentre.offset + grid_shift
+
+# convert to spatial grid
+grid_sp = SpatialGrid(grid, proj4string = my_crs)
 
 
 # EARTHQUAKES -------------------------------------------------------------
@@ -220,9 +224,6 @@ coordinates(eq_xy) = ~ x + y
 proj4string(eq_xy) = my_crs
 cellIDs = over(eq_xy, grid_sp)
 ca_eq$Grid = cellIDs
-
-# colnames(cellIDs) = "Grid"
-# ca_eq = bind_cols(ca_eq, cellIDs)
 
 
 # WELLS -------------------------------------------------------------------
@@ -378,7 +379,7 @@ final_eqs = ca_eq %>%
   group_by(Grid) %>%
   dplyr::select(time) %>%
   table() %>%
-  matrix(87, 450) %>%
+  matrix(length(final_blocks), 450) %>%
   data.frame()
 
 # final water time series
@@ -394,16 +395,16 @@ rm(inj_wells)
 rm(which_ca)
 rm(well_locs)
 rm(well_locs_df)
-save.image(file = "clean_data.RData")
-save.image()
+# save.image(file = "clean_data.RData")
+# save.image()
 
 
 # Writing -----------------------------------------------------------------
 
 # write files
-write.csv(final_water, file = "data/final_water.csv", row.names = F)
-write.csv(final_eqs, file = "data/final_eqs.csv", row.names = F)
-write.table(final_blocks, file = "data/final_blocks.txt", row.names = F, col.names = F)
+write.csv(final_water, file = paste0("data/final_water", grid_name, ".csv"), row.names = F)
+write.csv(final_eqs, file = paste0("data/final_eqs", grid_name, ".csv"), row.names = F)
+write.table(final_blocks, file = paste0("data/final_blocks", grid_name, ".txt"), row.names = F, col.names = F)
 write.table(months, file = "data/months.txt", row.names = F, col.names = F)
 
 

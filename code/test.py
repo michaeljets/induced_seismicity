@@ -31,7 +31,7 @@ import random
 # in total). 
 
 water = []
-with open('data/final_water_ok.csv') as file:
+with open('data/final_water_ne1.csv') as file:
     f = csv.reader(file, delimiter = ',')
     next(f)
     for row in f:
@@ -46,7 +46,7 @@ with open('data/final_water_ok.csv') as file:
 # from 1980-2017 (length 456) for a distinct block (87 blocks in total). 
 
 eqs = []
-with open('data/final_eqs_ok.csv') as file:
+with open('data/final_eqs_ne1.csv') as file:
     f = csv.reader(file, delimiter = ',')
     next(f)
     for row in f:
@@ -58,7 +58,7 @@ with open('data/final_eqs_ok.csv') as file:
 
 ## LOAD IN GRID IDs
 
-f = open('data/final_blocks_ok.txt', 'r')
+f = open('data/final_blocks_ne1.txt', 'r')
 grids = f.read().splitlines()
 
 
@@ -83,12 +83,12 @@ for block in water_eqs:
     print("P-value: ", pval)
 
 # save results
-with open("results/pval_blocks_ok.csv", "w", newline = '') as file:
+with open("results/pval_blocks_ne1.csv", "w", newline = '') as file:
     filewriter = csv.writer(file, delimiter = ',')
     for i in range(len(pvalues)):
         filewriter.writerow([pvalues[i], grids[i]])
 
-with open("results/pval_combined_ok.csv", "w", newline = '') as file:
+with open("results/pval_combined_ne1.csv", "w", newline = '') as file:
     filewriter = csv.writer(file, delimiter = ',')
     filewriter.writerow([combine_pvalues(pvalues)[1]])
 
