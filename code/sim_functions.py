@@ -37,7 +37,12 @@ def largest_corr(rank1, rank2, lag=12, norm=np.inf):
 
     r1 = rank1[:-lag]
     corrs = list(map(lambda i: pearsonr(r1, rank2[i:(len(r1)+i)])[0], range(lag+1)))
+<<<<<<< HEAD
     corrs = [0 if math.isnan(cor) else max(0, cor) for cor in corrs]
+=======
+    #corrs = [0 if math.isnan(cor) else cor for cor in corrs]
+    corrs = [0 if math.isnan(cor) else max(0,cor) for cor in corrs]
+>>>>>>> 47e7404abfb2ecacd80478a03e50f8e16559e9ee
     # return np.argmax(corrs) # which lag has the maximum correlation
     return np.linalg.norm(corrs, ord=norm)
 
