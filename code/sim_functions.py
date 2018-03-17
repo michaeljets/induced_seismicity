@@ -29,11 +29,15 @@ def largest_corr(rank1, rank2, lag=12, norm=np.inf):
     For special case of one list containing all same value (e.g. [1,1,1]), the
     correlation will equal one from a divide by 0 error (since sd is 0). For
     these cases, correlation is coerced to 0.
+
+    Since `norm` can take an even integer which would treat positive and negative
+    correlations the same, we take the max(0, correlation) since by assumption,
+    we presume that injections do not suppress seismicity.
     """
 
     r1 = rank1[:-lag]
     corrs = list(map(lambda i: pearsonr(r1, rank2[i:(len(r1)+i)])[0], range(lag+1)))
-    corrs = [0 if math.isnan(cor) else cor for cor in corrs]
+    corrs = [0 if math.isnan(cor) else max(0, cor) for cor in corrs]
     # return np.argmax(corrs) # which lag has the maximum correlation
     return np.linalg.norm(corrs, ord=norm)
 
@@ -55,7 +59,7 @@ def simulate(ranks1, ranks2, num_trials=10000, lag=12, norm=np.inf):
     return np.array(list(map(simulate_single_trial, range(num_trials))))
 
 
-def simulate_by_block(ranks1, ranks2, bstart, bsize, lag=12, norm=np.inf, num_trials=10000):
+def simulate_by_block(ranks1, ranks2, bstart, bsize, lag=12, norm=np.inf, num_trials=5000):
     """
     Like `simulate` above except permutes by block specified by `bstart`
     and `bsize`.
@@ -82,6 +86,16 @@ def p_value(dist, observed):
 
     return np.sum(dist >= observed) / float(len(dist))
 
+def p_sd(R, p):
+    """
+    Given `R` replications and probability `p`, the standard deviation
+    of a binomial(`R`, `p`) distribution is calculated. The purpose
+    of this function is to provide an estimate of uncertainty for the
+    p-value constructed from our estimated permutation test.
+    """
+
+    return (p*(1-p) / R) ** (0.5)
+
 
 def corr_test(lst1, lst2, lag=12, norm=np.inf, bstart=0, bsize=6, plot=True, filename=None):
     """
@@ -99,7 +113,8 @@ def corr_test(lst1, lst2, lag=12, norm=np.inf, bstart=0, bsize=6, plot=True, fil
         if filename:
             plt.savefig(filename)
         plt.show()
-    return p_value(s, og)
+    pval = p_value(s, og)
+    return pval, p_sd(len(s), pval)
 
 
 def block_permute(ts, start, length): 
