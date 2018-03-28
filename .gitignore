@@ -15,4 +15,5 @@ pictures
 clean_data.RData
 code/__pycache__/
 documentation/
-presentation/.ipynb_checkpoints/
+presentation/
+code/fix.py
