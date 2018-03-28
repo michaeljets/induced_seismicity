@@ -15,6 +15,8 @@ library(ggmap)
 library(dplyr)
 library(spdep)
 
+# load("clean_data.RData")
+
 # GET OKLAHOMA GRID -------------------------------------------------------
 
 # get oklahoma boundaries
@@ -61,9 +63,7 @@ write.csv(data.frame(coords_ok), "results/coordinates_ok.csv", row.names = F)
 
 # VISUALIZATIONS ----------------------------------------------------------
 
-# load california data
-
-# load("clean_data.RData")
+# load data
 
 water_ca = read.csv("data/final_water.csv")
 eqs_ca = read.csv("data/final_eqs.csv")
