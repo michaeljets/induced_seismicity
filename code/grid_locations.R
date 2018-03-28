@@ -46,19 +46,17 @@ grid_sp_ok = SpatialGrid(grid_ok, proj4string = my_crs)
 pvals_ca = read.csv("results/pval_blocks_ca.csv", stringsAsFactors = F)
 pvals_ok = read.csv("results/pval_blocks_ok.csv", stringsAsFactors = F)
 
-# get coordinates
-grid_blocks_ca = pvals_ca$Grid[pvals_ca$P.value <= .05]
-grid_blocks_ok = pvals_ok$Grid[pvals_ok$P.value <= .05]
-
-coords_ca = coordinates(grid_sp)[grid_blocks_ca, ]
-coords_ok = coordinates(grid_sp_ok)[grid_blocks_ok, ]
-
-colnames(coords_ca) = c("Longitude", "Latitude")
-colnames(coords_ok) = c("Longitude", "Latitude")
+# combine pvals data with coordinate data
+pvals_ca = pvals_ca %>%
+            mutate(Longitude = coordinates(grid_sp)[pvals_ca$Grid, 1],
+                   Latitude = coordinates(grid_sp)[pvals_ca$Grid, 2])
+pvals_ok = pvals_ok %>%
+            mutate(Longitude = coordinates(grid_sp_ok)[pvals_ok$Grid, 1],
+                   Latitude = coordinates(grid_sp_ok)[pvals_ok$Grid,2])
 
 # write data
-write.csv(data.frame(coords_ca), "results/coordinates_ca.csv", row.names = F)
-write.csv(data.frame(coords_ok), "results/coordinates_ok.csv", row.names = F)
+write.csv(pvals_ca, "results/final_ca.csv", row.names = F)
+write.csv(pvals_ok, "results/final_ok.csv", row.names = F)
 
 
 # VISUALIZATIONS ----------------------------------------------------------
@@ -73,16 +71,17 @@ eqs_ok = read.csv("data/final_eqs_ok.csv")
 
 
 # get kern county coordinates
-kern = map_data("county") %>% filter(region == 'california', subregion = 'kern')
+kern = map_data("county") %>% filter(region == 'california', subregion == 'kern')
 
-# significant blocks on california map
+# significant blocks on california map (red dot is Tejon oil field)
 cal_spolys_df = fortify(cal_spolys)
 grid_df_ca = data.frame(SpatialPoints(grid, my_crs)@coords)
 ggplot() +
   geom_polygon(data = cal_spolys_df, aes(x = long, y = lat, group = group)) +
   geom_polygon(data = kern, aes(x = long, y = lat, group = group), alpha = 0.75, fill = 'blue') +
   geom_tile(data = grid_df_ca, aes(x = x1, y = x2), color = 'yellow', alpha = 0) +
-  geom_point(data = data.frame(coords_ca), aes(x = Longitude, y = Latitude), size = 2, color = 'green') +
+  geom_point(data = data.frame(pvals_ca %>% filter(P.value.lower.bound <= .05)), 
+             aes(x = Longitude, y = Latitude), size = 2, color = 'green') +
   geom_point(data = data.frame(long = -119, lat = 35), aes(x = long, y = lat), size = 2, color = 'red') +
   xlab("Longitude") +
   ylab("Latitude")
@@ -94,7 +93,8 @@ grid_df_ok = data.frame(SpatialPoints(grid_ok, my_crs)@coords)
 ggplot() +
   geom_polygon(data = okl_spolys_df, aes(x = long, y = lat, group = group)) +
   geom_tile(data = grid_df_ok, aes(x = x1, y = x2), color = 'yellow', alpha = 0) +
-  geom_point(data = data.frame(coords_ok), aes(x = Longitude, y = Latitude), size = 2, color = 'green') +
+  geom_point(data = data.frame(pvals_ok %>% filter(P.value.lower.bound <= .05)), 
+             aes(x = Longitude, y = Latitude), size = 2, color = 'green') +
   xlab("Longitude") +
   ylab("Latitude")
 
