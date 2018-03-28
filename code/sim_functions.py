@@ -6,7 +6,10 @@
 """
 Context: 
 
-Fill me in!
+These functions are used to calculate our test statistic (Spearman's rank cross-
+correlation) given seismicity and water injection data. There are also functions
+to permute the earthquake data by blocks for non-parametric testing. The functions
+in this file are both used in our simulation and in our actual test.
 
 """
 
@@ -17,6 +20,8 @@ import matplotlib.pyplot as plt
 
 from scipy.stats import rankdata
 from scipy.stats import pearsonr
+
+from statsmodels.stats.proportion import proportion_confint
 
 ##############################################################################
 
@@ -36,18 +41,16 @@ def largest_corr(rank1, rank2, lag=12, norm=np.inf):
     """
 
     r1 = rank1[:-lag]
+
+    # Note: below line returns a warning if both arguments to pearsonr are exclusively
+    #       lists of 0. Still behaves as expected.
     corrs = list(map(lambda i: pearsonr(r1, rank2[i:(len(r1)+i)])[0], range(lag+1)))
-<<<<<<< HEAD
     corrs = [0 if math.isnan(cor) else max(0, cor) for cor in corrs]
-=======
-    #corrs = [0 if math.isnan(cor) else cor for cor in corrs]
-    corrs = [0 if math.isnan(cor) else max(0,cor) for cor in corrs]
->>>>>>> 47e7404abfb2ecacd80478a03e50f8e16559e9ee
     # return np.argmax(corrs) # which lag has the maximum correlation
     return np.linalg.norm(corrs, ord=norm)
 
 
-def simulate(ranks1, ranks2, num_trials=10000, lag=12, norm=np.inf):
+def simulate(ranks1, ranks2, num_trials=5000, lag=12, norm=np.inf):
     """
     Given two ranked vectors, repeatedly permute ranks1 and get the 
     p-norm correlation for all lags specified. Return all simulated values.
@@ -91,25 +94,15 @@ def p_value(dist, observed):
 
     return np.sum(dist >= observed) / float(len(dist))
 
-def p_sd(R, p):
-    """
-    Given `R` replications and probability `p`, the standard deviation
-    of a binomial(`R`, `p`) distribution is calculated. The purpose
-    of this function is to provide an estimate of uncertainty for the
-    p-value constructed from our estimated permutation test.
-    """
 
-    return (p*(1-p) / R) ** (0.5)
-
-
-def corr_test(lst1, lst2, lag=12, norm=np.inf, bstart=0, bsize=6, plot=True, filename=None):
+def corr_test(lst1, lst2, lag=12, norm=np.inf, bstart=0, bsize=6, plot=True, filename=None, num_trials=5000):
     """
     Combining simulation into a test that returns a p-value. Option
     to plot.
     """
 
     og = largest_corr(lst1, lst2, lag, norm)
-    s = simulate_by_block(lst1, lst2, lag=lag, norm=norm, bstart=bstart, bsize=bsize)
+    s = simulate_by_block(lst1, lst2, lag=lag, norm=norm, bstart=bstart, bsize=bsize, num_trials=num_trials)
     if plot:
         plt.hist(s, bins = 'auto')
         plt.axvline(x = og, color = 'red')
@@ -119,7 +112,12 @@ def corr_test(lst1, lst2, lag=12, norm=np.inf, bstart=0, bsize=6, plot=True, fil
             plt.savefig(filename)
         plt.show()
     pval = p_value(s, og)
-    return pval, p_sd(len(s), pval)
+    p_confint = list(proportion_confint(pval*num_trials, num_trials, alpha = .05, method = 'beta'))
+    if np.isnan(p_confint[0]):
+        p_confint[0] = 0
+    if np.isnan(p_confint[1]):
+        p_confint[1] = 1
+    return pval, p_confint[0], p_confint[1]
 
 
 def block_permute(ts, start, length): 

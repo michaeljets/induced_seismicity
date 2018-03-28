@@ -13,7 +13,7 @@ which we vary in order to cover a variety of different cases.
 
 This script takes in 4 arguments from the command line. In order, they are: the length
 of time that earthquakes depend on previous water injections, the sum of the `beta`
-coefficients described in our synthetic seismicity function, and `mu` from the same function.
+coefficients, and `mu` as described in our synthetic seismicity function.
 
 """
 
@@ -48,7 +48,7 @@ starttime = datetime.now()
 # in total). 
 
 water = []
-with open('../data/final_water.csv') as file:
+with open('data/final_water.csv') as file:
     f = csv.reader(file, delimiter = ',')
     next(f)
     for row in f:
@@ -69,7 +69,7 @@ use_water = np.array(water[81])
 ### RUN PROGRAM X NUMBER OF TIMES
 
 count = 1
-while count <= 10:
+while count <= 500:
     count += 1
 
 
@@ -91,7 +91,6 @@ while count <= 10:
     weights = []
     for i,j in zip(w, w[1:]):
         weights.append(j-i)
-
     b = np.array([total_betas] * len(weights)) * np.array(weights)
 
     # get mu from command line
@@ -106,7 +105,7 @@ while count <= 10:
 
     ## SIMULATE AND PLOT
 
-    # plot water and earthquake data
+    ## plot water data
     # plt.plot(dates, use_water)
     # plt.xticks(dates[::60])
     # plt.xlabel('dates')
@@ -114,122 +113,32 @@ while count <= 10:
     # plt.savefig('water_injections.png')
     # plt.show()
 
-    plt.plot(dates, eqs)
-    plt.xticks(dates[::60])
-    plt.xlabel('dates')
-    plt.ylabel('counts')
-    plt.savefig('earthquakes.png')
-    plt.show()
-
-    # rank data
-    eqs_rank = rankdata(eqs)
-    water_rank = rankdata(use_water)
-
-    # run simulation
-    pval, pval_sd = sim.corr_test(water_rank, eqs_rank, norm = 2, plot = False, filename='corr_p.png')
-    # print("P-value: ", pval)
-    # print("P-value SD: ", pval_sd)
-
-    # write results
-    filestring = '../data/' + sys.argv[4]
-    if count == 2:
-        with open(filestring, 'w+', newline = '') as file:
-            filewriter = csv.writer(file, delimiter = ',')
-            filewriter.writerow([pval, pval_sd])
-    else:
-        with open(filestring, 'a', newline = '') as file:
-            filewriter = csv.writer(file, delimiter = ',')
-            filewriter.writerow([pval, pval_sd])
-
-    ##############################################################################
-
-    # ## TEST UNCORRELATED DATA
-
-    # eqs = np.tile(np.array([0]*56+[10]),8)
-    # eqs = np.array([np.exp(np.random.randn(1) + (4 if i % 50 == 0 else 0)) for i in range(450)])
-
-    # # rank data
-    # eqs_rank = rankdata(eqs)
-
+    ## plot earthquake data
     # plt.plot(dates, eqs)
     # plt.xticks(dates[::60])
     # plt.xlabel('dates')
     # plt.ylabel('counts')
-    # plt.savefig('earthquakes_uncorr.png')
+    # plt.savefig('earthquakes.png')
     # plt.show()
 
-    # # run simulation
-    # pval = sim.corr_test(water_rank, eqs_rank, norm = 2, plot = True, filename='uncorr_p.png')
-    # print("P-value: ", pval)
+    rank data
+    eqs_rank = rankdata(eqs)
+    water_rank = rankdata(use_water)
 
+    # run simulation
+    pval, pval_lower, pval_upper = sim.corr_test(water_rank, eqs_rank, norm = 2, plot = False, filename='corr_p.png', num_trials = 5000)
 
-    ##############################################################################
+    # write results
+    filestring = 'sim_results/' + sys.argv[4]
+    if count == 2:
+        with open(filestring, 'w+', newline = '') as file:
+            filewriter = csv.writer(file, delimiter = ',')
+            filewriter.writerow([pval, pval_lower, pval_upper])
+    else:
+        with open(filestring, 'a', newline = '') as file:
+            filewriter = csv.writer(file, delimiter = ',')
+            filewriter.writerow([pval, pval_lower, pval_upper])
 
-    # ## PICK P-NORM
-
-    # with open('data/pnorm_pval.csv', 'w', newline='') as file:
-
-    #     norms_totry = np.array([2, 5, np.inf])
-    #     filewriter = csv.writer(file, delimiter=',')
-    #     filewriter.writerow(norms_totry)
-
-    #     for i in range(25):
-
-    #         # random pick of water data
-    #         random_water = random.sample(range(len(water)), 1)[0]
-    #         use_water = np.array(water[random_water])
-
-    #         # generate earthquake data
-    #         eqs = get_eq(use_water)
-
-    #         # rank data
-    #         eqs_rank = rankdata(eqs)
-    #         water_rank = rankdata(use_water)
-
-    #         # run simulation for the 4 values of p_norm
-    #         pvalues = []
-
-    #         for n in norms_totry:
-    #             p = sim.corr_test(water_rank, eqs_rank, norm = n, plot = False)
-    #             pvalues.append(p)
-
-    #         # write to csv file
-    #         filewriter.writerow(pvalues)
-
-
-    ##############################################################################
-
-    # ## LOOK AT POWER OF MAX_LAGS
-    '''
-    with open('../data/lags_pvals.csv', 'w', newline='') as file:
-
-        lags = np.array([0, 3, 6, 9, 12])
-        filewriter = csv.writer(file, delimiter=',')
-        filewriter.writerow(lags)
-
-        for i in range(50):
-
-            # random pick of water data
-            random_water = random.sample(range(len(water)), 1)[0]
-            use_water = np.array(water[random_water])
-
-            # generate earthquake data
-            eqs = get_eq(use_water)
-
-            # rank data
-            eqs_rank = rankdata(eqs)
-            water_rank = rankdata(use_water)
-
-            # run simulation for the 4 values of p_norm
-            pvalues = []
-
-            for n in lags:
-                p = sim.corr_test(water_rank, eqs_rank, lag = n, norm = 1, plot = False)
-                pvalues.append(p)
-
-            # write to csv file
-            filewriter.writerow(pvalues)
-    '''
 
 ##############################################################################
 

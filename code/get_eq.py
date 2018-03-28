@@ -6,34 +6,13 @@
 """
 Context: 
 
-Fill me in!
+This function follows from the Poisson model defined in (McClure 2017).
 
 """
+
 import numpy as np
 
-def get_eq_simple(water, mu=0.0000001, beta=0.00001):
-    """
-    Simulates earthquake data with a poisson process with a dependency on water at lag 0.
-    """
-
-    eq = np.array([np.random.poisson(np.exp(np.random.randn(1)) * (mu + beta * water[i])) 
-                   for i in range(len(water))])
-    return eq
-
-
-def get_eq_timelag(water, mu=0.0000001, beta=0.00001, alpha=0.047):
-    """
-    Simulates earthquake data with a poisson process with a dependency on water at lag 0.
-    Also includes a dependency on previous earthquake data.
-    """
-
-    eq = np.random.poisson(np.exp(np.random.randn(1)) * (mu + beta * water[0]))
-    for i in range(1, len(water)):
-        new = np.random.poisson(np.exp(np.random.randn(1)) * (mu + beta * water[i]) \
-                                + np.exp(np.random.randn(1)) * alpha * eq[i-1])
-        eq = np.concatenate([eq, new])
-    return eq
-
+##############################################################################
 
 def get_eq(water, betas, mu, alpha=.01):
     """
@@ -86,7 +65,7 @@ def get_eq(water, betas, mu, alpha=.01):
         ind = np.random.choice(range(len(eq)))
         eq[ind] = 1
 
-    # # print overall lambda range
+    # # print overall lambda (i.e. Poisson(lambda)) range
     # print("Mean mu contribution: ", np.mean(mu_cont))
     # print("Mean water contribution: ", np.mean(water_cont))
     # print("Mean clust contribution: ", np.mean(clust_cont))
