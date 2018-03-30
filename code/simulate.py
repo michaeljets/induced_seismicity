@@ -103,27 +103,29 @@ while count <= 500:
 
     ##############################################################################
 
-    ## SIMULATE AND PLOT
+    # ## SIMULATE AND PLOT
 
     # # plot water data
-    # plt.plot(dates, use_water)
+    # plt.plot(dates, use_water, color = 'k')
     # plt.xticks(dates[::60])
-    # plt.xlabel('dates')
-    # plt.ylabel('bbl')
+    # plt.xlabel('Time')
+    # plt.ylabel('Volume (bbl)')
+    # plt.title('Water Injections Sample')
     # plt.savefig('sim_results/water_injections.png')
     # plt.show()
 
     # # plot earthquake data
-    # plt.plot(dates, eqs)
+    # plt.plot(dates, eqs, color = 'k')
     # plt.xticks(dates[::60])
-    # plt.xlabel('dates')
-    # plt.ylabel('counts')
+    # plt.xlabel('Time')
+    # plt.ylabel('Number of earthquakes')
+    # plt.title('Simulated Earthquakes (High)')
     # plt.savefig('sim_results/eq_example_high.png')
     # plt.show()
 
-    # rank data
-    eqs_rank = rankdata(eqs)
-    water_rank = rankdata(use_water)
+    # # rank data
+    # eqs_rank = rankdata(eqs)
+    # water_rank = rankdata(use_water)
 
     # run simulation
     pval, pval_lower, pval_upper = sim.corr_test(water_rank, eqs_rank, norm = 2, plot = False, num_trials = 5000)

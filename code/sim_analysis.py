@@ -31,18 +31,18 @@ for i in range(1, 13):
 # SAVE SUMMARY STATISTICS
 
 print_statements = [
-	"Low seismicity, low water, 3 months",
-	"High seismicity, low water, 3 months",
-	"Low seismicity, high water, 3 months",
-	"High seismicity, high water, 3 months",
-	"Low seismicity, low water, 9 months",
-	"High seismicity, low water, 9 months",
-	"Low seismicity, high water, 9 months",
-	"High seismicity, high water, 9 months",
-	"No seismicity, low water, 3 months",
-	"No seismicity, high water, 3 months",
-	"Low seismicity, no water, 3 months",
-	"High seismicity, no water, 3 months"
+	"Low background, low water, 3 months",
+	"High background, low water, 3 months",
+	"Low background, high water, 3 months",
+	"High background, high water, 3 months",
+	"Low background, low water, 9 months",
+	"High background, low water, 9 months",
+	"Low background, high water, 9 months",
+	"High background, high water, 9 months",
+	"No background, low water, 3 months",
+	"No background, high water, 3 months",
+	"Low background, no water, 3 months",
+	"High background, no water, 3 months"
 ]
 
 to_save = [["", "Mean p-values", "Mean p-values lower", "Mean p-values upper", "% of p-values <= 0.05"]]

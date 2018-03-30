@@ -52,11 +52,11 @@ pvals_ca = pvals_ca %>%
                    Latitude = coordinates(grid_sp)[pvals_ca$Grid, 2])
 pvals_ok = pvals_ok %>%
             mutate(Longitude = coordinates(grid_sp_ok)[pvals_ok$Grid, 1],
-                   Latitude = coordinates(grid_sp_ok)[pvals_ok$Grid,2])
+                   Latitude = coordinates(grid_sp_ok)[pvals_ok$Grid, 2])
 
-# write data
-write.csv(pvals_ca, "results/final_ca.csv", row.names = F)
-write.csv(pvals_ok, "results/final_ok.csv", row.names = F)
+# # write data
+# write.csv(pvals_ca, "results/final_ca.csv", row.names = F)
+# write.csv(pvals_ok, "results/final_ok.csv", row.names = F)
 
 
 # VISUALIZATIONS ----------------------------------------------------------
@@ -77,24 +77,37 @@ kern = map_data("county") %>% filter(region == 'california', subregion == 'kern'
 cal_spolys_df = fortify(cal_spolys)
 grid_df_ca = data.frame(SpatialPoints(grid, my_crs)@coords)
 ggplot() +
-  geom_polygon(data = cal_spolys_df, aes(x = long, y = lat, group = group)) +
-  geom_polygon(data = kern, aes(x = long, y = lat, group = group), alpha = 0.75, fill = 'blue') +
-  geom_tile(data = grid_df_ca, aes(x = x1, y = x2), color = 'yellow', alpha = 0) +
+  geom_polygon(data = cal_spolys_df, aes(x = long, y = lat, group = group), fill = 'white') +
+  geom_polygon(data = kern, aes(x = long, y = lat, group = group, fill = 'Kern County'), alpha = 0.35) +
+  geom_tile(data = grid_df_ca, aes(x = x1, y = x2), color = 'grey', alpha = 0) +
   geom_point(data = data.frame(pvals_ca %>% filter(P.value.lower.bound <= .05)), 
-             aes(x = Longitude, y = Latitude), size = 2, color = 'green') +
-  geom_point(data = data.frame(long = -119, lat = 35), aes(x = long, y = lat), size = 2, color = 'red') +
+             aes(x = Longitude, y = Latitude, shape = 'Sig. Blocks'), size = 2, color = 'black') +
+  geom_point(data = data.frame(long = -119, lat = 35), aes(x = long, y = lat, shape = 'Tejon Oil Field'), size = 2) +
   xlab("Longitude") +
-  ylab("Latitude")
+  ylab("Latitude") +
+  scale_fill_manual(name = "", values = 'grey') +
+  scale_shape_discrete(name = "", solid = F) +
+  theme(legend.position = c(.8, .7),
+        legend.title = element_blank())
+
+# save plot
+ggsave("results/cal_sig_map.png", scale = 2)
 
 
 # significant on oklahoma map
 okl_spolys_df = fortify(okl_spolys)
 grid_df_ok = data.frame(SpatialPoints(grid_ok, my_crs)@coords)
 ggplot() +
-  geom_polygon(data = okl_spolys_df, aes(x = long, y = lat, group = group)) +
-  geom_tile(data = grid_df_ok, aes(x = x1, y = x2), color = 'yellow', alpha = 0) +
+  geom_polygon(data = okl_spolys_df, aes(x = long, y = lat, group = group), fill = 'white') +
+  geom_tile(data = grid_df_ok, aes(x = x1, y = x2), color = 'grey', alpha = 0) +
   geom_point(data = data.frame(pvals_ok %>% filter(P.value.lower.bound <= .05)), 
-             aes(x = Longitude, y = Latitude), size = 2, color = 'green') +
+             aes(x = Longitude, y = Latitude, shape = 'Sig. Blocks'), size = 2, color = 'black') +
   xlab("Longitude") +
-  ylab("Latitude")
+  ylab("Latitude") +
+  scale_shape_discrete(name = "", solid = F) +
+  theme(legend.position = c(.1, .1),
+        legend.title = element_blank())
+
+# save plot
+ggsave("results/okl_sig_map.png", width = 10, height = 6)
 
