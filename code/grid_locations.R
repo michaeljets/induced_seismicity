@@ -73,7 +73,15 @@ eqs_ok = read.csv("data/final_eqs_ok.csv")
 # get kern county coordinates
 kern = map_data("county") %>% filter(region == 'california', subregion == 'kern')
 
-# significant blocks on california map (red dot is Tejon oil field)
+# add mcclure findings
+mcclure_ca = data.frame(Latitude = c(33.8, 36.2, 34.2),
+                        Longitude = c(-118.4, -120.4, -118.4))
+mcclure_ok = data.frame(Latitude = c(34.6, 35.6, 36.8, 36.2, 36.6, 36.8, 37, 
+                                     35, 35.8, 36.6, 36.8, 36.4, 36.6, 36.8),
+                        Longitude = c(-96.2, -97.2, -98.2, -96.8, -98, -98.6, -98, 
+                                      -96, -97.4, -97.8, -98, -97, -97.4, -97.8))
+
+# significant blocks on california map
 cal_spolys_df = fortify(cal_spolys)
 grid_df_ca = data.frame(SpatialPoints(grid, my_crs)@coords)
 ggplot() +
@@ -83,10 +91,12 @@ ggplot() +
   geom_point(data = data.frame(pvals_ca %>% filter(P.value.lower.bound <= .05)), 
              aes(x = Longitude, y = Latitude, shape = 'Sig. Blocks'), size = 2, color = 'black') +
   geom_point(data = data.frame(long = -119, lat = 35), aes(x = long, y = lat, shape = 'Tejon Oil Field'), size = 2) +
+  geom_point(data = mcclure_ca, aes(x = Longitude, y = Latitude, shape = '(McClure 2017)'), size = 2) +
   xlab("Longitude") +
   ylab("Latitude") +
   scale_fill_manual(name = "", values = 'grey') +
-  scale_shape_discrete(name = "", solid = F) +
+  scale_shape_manual(name = "", values = c(3, 1, 2),
+                     breaks = c('Sig. Blocks', '(McClure 2017)', 'Tejon Oil Field')) +
   theme(legend.position = c(.8, .7),
         legend.title = element_blank())
 
@@ -102,10 +112,11 @@ ggplot() +
   geom_tile(data = grid_df_ok, aes(x = x1, y = x2), color = 'grey', alpha = 0) +
   geom_point(data = data.frame(pvals_ok %>% filter(P.value.lower.bound <= .05)), 
              aes(x = Longitude, y = Latitude, shape = 'Sig. Blocks'), size = 2, color = 'black') +
+  geom_point(data = mcclure_ok, aes(x = Longitude, y = Latitude, shape = '(McClure 2017)'), size = 2) +
   xlab("Longitude") +
   ylab("Latitude") +
-  scale_shape_discrete(name = "", solid = F) +
-  theme(legend.position = c(.1, .1),
+  scale_shape_manual(name = "", values = c(3, 1), breaks = c('Sig. Blocks', '(McClure 2017)')) +
+  theme(legend.position = c(.2, .2),
         legend.title = element_blank())
 
 # save plot
